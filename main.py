@@ -43,14 +43,53 @@ def search_records():
 
     temp = []
     for record in results:
-        if name.lower().__eq__(record.first_name.lower()) or last_name.lower().__eq__(
-                record.last_name.lower()) or record.birth_date.__eq__(
+        if name != '' and last_name != '' and department != '' and login != '' and email != '':
+            if name.lower().__eq__(record.first_name.lower()):
+                print(name)
+                if last_name.lower().__eq__(record.last_name.lower()):
+                    print(last_name)
+                    if record.birth_date.__eq__(datetime.strptime(birth_date, '%d/%m/%Y')):
+                        print(birth_date)
+                        if department.__eq__(record.department.department):
+                            print(department)
+                            if login.__eq__(record.login):
+                                print(login)
+                                if email.__eq__(record.email):
+                                    print(email)
+                                    if record.contracts.date_from.__eq__(datetime.strptime(date_from, '%d/%m/%Y')):
+                                        print(date_from)
+                                        if record.contracts.date_to.__eq__(datetime.strptime(date_to, '%d/%m/%Y')):
+                                            print(date_to)
+                                            temp.append(record)
+                                            break
+
+    if temp.__len__() == 0:
+        for record in results:
+            if name.lower().__eq__(record.first_name.lower()) or last_name.lower().__eq__(
+                    record.last_name.lower()) or record.birth_date.__eq__(
                 datetime.strptime(birth_date, '%d/%m/%Y')) or department.__eq__(
                 record.department.department) or login.__eq__(record.login) or email.__eq__(
                 record.email) or record.contracts.date_from.__eq__(
                 datetime.strptime(date_from, '%d/%m/%Y')) or record.contracts.date_to.__eq__(
                 datetime.strptime(date_to, '%d/%m/%Y')):
-            temp.append(record)
+                temp.append(record)
+        # if name.lower().__eq__(record.first_name.lower()):
+        #     print(name)
+        #     if last_name.lower().__eq__(record.last_name.lower()):
+        #         print(last_name)
+        #         if record.birth_date.__eq__(datetime.strptime(birth_date, '%d/%m/%Y')):
+        #             print(birth_date)
+        #             if department.__eq__(record.department.department):
+        #                 print(department)
+        #                 if login.__eq__(record.login):
+        #                     print(login)
+        #                     if email.__eq__(record.email):
+        #                         print(email)
+        #                         if record.contracts.date_from.__eq__(datetime.strptime(date_from, '%d/%m/%Y')):
+        #                             print(date_from)
+        #                             if record.contracts.date_to.__eq__(datetime.strptime(date_to, '%d/%m/%Y')):
+        #                                 print(date_to)
+        #                                 temp.append(record)
 
     if temp.__len__() > 0:
         for record in temp:
@@ -85,7 +124,7 @@ def lookup_records():
 
     birth_date_label = LabelFrame(search, text="Дата рождения")
     birth_date_label.pack(padx=3, pady=3)
-    birth_date_entry = DateEntry(birth_date_label, font=("Times New Roman", 14),  date_pattern='dd/mm/y')
+    birth_date_entry = DateEntry(birth_date_label, font=("Times New Roman", 14), date_pattern='dd/mm/y')
     birth_date_entry.pack(padx=10, pady=10)
 
     department_label = LabelFrame(search, text="Название отдела")
@@ -110,7 +149,7 @@ def lookup_records():
 
     date_to_label = LabelFrame(search, text="По")
     date_to_label.pack(padx=3, pady=3)
-    date_to_entry = DateEntry(date_to_label, font=("Times New Roman", 14),  date_pattern='dd/mm/y')
+    date_to_entry = DateEntry(date_to_label, font=("Times New Roman", 14), date_pattern='dd/mm/y')
     date_to_entry.pack(padx=10, pady=10)
 
     search_button = Button(search, text="Найти", command=search_records)
@@ -152,10 +191,10 @@ if __name__ == '__main__':
     my_menu = Menu(root)
     root.config(menu=my_menu)
     search_menu = Menu(my_menu, tearoff=0)
-    my_menu.add_cascade(label="Search", menu=search_menu)
-    search_menu.add_command(label="Search", command=lookup_records)
+    my_menu.add_cascade(label="Опции", menu=search_menu)
+    search_menu.add_command(label="Найти", command=lookup_records)
     search_menu.add_separator()
-    search_menu.add_command(label="Reset", command=query_database)
+    search_menu.add_command(label="Сбросить", command=query_database)
 
     my_tree['columns'] = (
         'first_name', 'last_name', 'birth_date', 'department', 'login', 'email', 'date_from', 'date_to')
@@ -166,7 +205,7 @@ if __name__ == '__main__':
     my_tree.column("birth_date", anchor=CENTER, width=90)
     my_tree.column("department", anchor=CENTER, width=150)
     my_tree.column("login", anchor=CENTER, width=80)
-    my_tree.column("email", anchor=CENTER, width=160)
+    my_tree.column("email", anchor=CENTER, width=200)
     my_tree.column("date_from", anchor=CENTER, width=80)
     my_tree.column("date_to", anchor=CENTER, width=80)
 
