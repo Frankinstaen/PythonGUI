@@ -1,11 +1,105 @@
+from __future__ import annotations
 from tkcalendar import DateEntry
 from tkinter import ttk
 
-from Entity.Models import engine, Personal, Pc, Departments, Сontracts, Login_dates
 from datetime import datetime
 from sqlalchemy.orm import Session
 from sqlalchemy.orm import joinedload
 from tkinter import *
+import uuid
+from sqlalchemy import ForeignKey, String
+import sqlalchemy as sa
+from sqlalchemy.orm import declarative_base, backref
+from sqlalchemy.orm import relationship
+from sqlalchemy.types import Date, DateTime, Integer, Text
+from sqlalchemy import create_engine
+
+Server = 'HOME-PC\SQLEXPRESS'
+Database = 'our_organization'
+Driver = 'ODBC Driver 17 for SQL Server'
+Database_con = f'mssql://@{Server}/{Database}?driver={Driver}'
+
+Base = declarative_base()
+
+
+class Departments(Base):
+    __tablename__ = "departments"
+    id = sa.Column(Integer, primary_key=True, autoincrement=False)
+    department = sa.Column(String)
+    personal = relationship("Personal", uselist=True, backref=backref("personal"))
+
+
+class Pc(Base):
+    __tablename__ = "pc"
+    pc_id = sa.Column(Text(36),
+                      default=lambda: str(uuid.uuid4()),
+                      primary_key=True,
+                      autoincrement=False)
+    pc_serial = sa.Column(String)
+    pc_mac = sa.Column(String)
+    pc_ip = sa.Column(String)
+    personal = relationship("Personal", back_populates="pc")
+
+
+class Personal(Base):
+    __tablename__ = "personal"
+    user_id = sa.Column(Text(36),
+                        default=lambda: str(uuid.uuid4()),
+                        primary_key=True,
+                        autoincrement=False)
+    first_name = sa.Column(String)
+    last_name = sa.Column(String)
+    birth_date = sa.Column(Date)
+    login = sa.Column(String)
+    email = sa.Column(String)
+    department_id = sa.Column(ForeignKey("departments.id"))
+    department = relationship("Departments", back_populates="personal", viewonly=True)
+    pc_id = sa.Column(ForeignKey("pc.pc_id"))
+    pc = relationship("Pc", back_populates="personal")
+    login_dates = relationship("Login_dates", back_populates="personal", uselist=True)
+    salary = relationship("Salary", back_populates="personal", uselist=True)
+    contracts = relationship("Сontracts", back_populates="personal", uselist=False)
+
+
+class Login_dates(Base):
+    __tablename__ = "login_dates"
+    login_dates_id = sa.Column(Integer, primary_key=True, autoincrement=True)
+    user_id = sa.Column(Text(36),
+                        ForeignKey("personal.user_id"),
+                        default=lambda: str(uuid.uuid4()))
+    pc_id = sa.Column(Text(36),
+                      ForeignKey("pc.pc_id"),
+                      default=lambda: str(uuid.uuid4()))
+    date_time = sa.Column(DateTime)
+    sa.UniqueConstraint(user_id, pc_id, date_time)
+    personal = relationship("Personal", back_populates="login_dates")
+
+
+class Сontracts(Base):
+    __tablename__ = "contracts"
+    contracts_id = sa.Column(Integer, primary_key=True, autoincrement=True)
+    user_id = sa.Column(Text(36),
+                        ForeignKey("personal.user_id"),
+                        default=lambda: str(uuid.uuid4()), )
+    date_from = sa.Column(Date)
+    date_to = sa.Column(Date)
+    personal = relationship("Personal", back_populates="contracts")
+
+
+class Salary(Base):
+    __tablename__ = "salary"
+    salary_id = sa.Column(Integer, primary_key=True, autoincrement=True)
+    user_id = sa.Column(Text(36),
+                        ForeignKey("personal.user_id"),
+                        default=lambda: str(uuid.uuid4()))
+    month = sa.Column(Integer)
+    year = sa.Column(Integer)
+    salary = sa.Column(Integer)
+    sa.UniqueConstraint(user_id, month, year, salary)
+    personal = relationship("Personal", back_populates="salary")
+
+
+engine = create_engine(Database_con)
 
 root = Tk()
 root.geometry("300x150")
@@ -79,7 +173,7 @@ def init_third():
         for record in results:
             for item in record.salary:
                 average_salary += item.salary
-            average_salary = round(average_salary/record.salary.__len__(), 2)
+            average_salary = round(average_salary / record.salary.__len__(), 2)
             my_tree.insert(parent='', index='end',
                            iid=count, text='',
                            values=(record.first_name, record.last_name, record.department.department, average_salary))
@@ -149,11 +243,12 @@ def init_third():
 
         temp = []
         for record in results:
-            if name != '' and last_name != '' and department != ''and month_from != '' and month_to != '' and year != '' and month_from.isnumeric() and month_to.isnumeric() and year.isnumeric():
+            if name != '' and last_name != '' and department != '' and month_from != '' and month_to != '' and year != '' and month_from.isnumeric() and month_to.isnumeric() and year.isnumeric():
                 if name.lower().__eq__(record.first_name.lower()):
                     if last_name.lower().__eq__(record.last_name.lower()):
                         if department.__eq__(record.department.department):
-                            if int(month_to).__eq__(record.salary.__len__()) and int(month_from) < record.salary.__len__():
+                            if int(month_to).__eq__(record.salary.__len__()) and int(
+                                    month_from) < record.salary.__len__():
                                 if int(year).__eq__(record.salary[0].year):
                                     temp.append(record)
                                     break
@@ -166,7 +261,8 @@ def init_third():
                     print("Ищет по ф, и, отдел, год")
                     for record in results:
                         if name.lower().__eq__(record.first_name.lower()) or last_name.lower().__eq__(
-                                record.last_name.lower()) or department.__eq__(record.login) or int(year).__eq__(record.salary[0].year):
+                                record.last_name.lower()) or department.__eq__(record.login) or int(year).__eq__(
+                            record.salary[0].year):
                             temp.append(record)
                 else:
                     print("Ищет по ф, и, отдел")
@@ -205,7 +301,8 @@ def init_third():
                         average_salary = round(average_salary / (int(month_to) - int(month_from) + 1), 2)
                         my_tree.insert(parent='', index='end',
                                        iid=count, text='',
-                                       values=(record.first_name, record.last_name, record.department.department, average_salary))
+                                       values=(record.first_name, record.last_name, record.department.department,
+                                               average_salary))
                         for item in record.salary:
                             if int(month_from) <= item.month <= int(month_to):
                                 my_tree.insert(count, index=END, values=(item.month, item.year, item.salary))
@@ -222,7 +319,8 @@ def init_third():
                         my_tree.insert(parent='', index='end',
                                        iid=count, text='',
                                        values=(
-                                           record.first_name, record.last_name, record.department.department, average_salary))
+                                           record.first_name, record.last_name, record.department.department,
+                                           average_salary))
                         for item in record.salary:
                             my_tree.insert(count, index=END, values=(item.month, item.year, item.salary))
                         average_salary = 0
@@ -238,11 +336,12 @@ def init_third():
                 my_tree.insert(parent='', index='end',
                                iid=count, text='',
                                values=(
-                               record.first_name, record.last_name, record.department.department, average_salary))
+                                   record.first_name, record.last_name, record.department.department, average_salary))
                 for item in record.salary:
                     my_tree.insert(count, index=END, values=(item.month, item.year, item.salary))
                 average_salary = 0
                 count += 1
+
 
 def init_second():
     def get_data():
