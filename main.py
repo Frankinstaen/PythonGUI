@@ -21,8 +21,8 @@ from sqlalchemy import create_engine
 # Driver = 'ODBC Driver 17 for SQL Server'
 # Database_con = f'mssql://@{Server}/{Database}?driver={Driver}'
 
-# server='WIN-NLAMS2TV4QH'
-server = 'HOME-PC\SQLEXPRESS'
+server='WIN-NLAMS2TV4QH'
+# server = 'HOME-PC\SQLEXPRESS'
 database='our_organization'
 username='sa'
 password='Qq12345678'
