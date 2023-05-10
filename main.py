@@ -21,15 +21,15 @@ from sqlalchemy import create_engine
 # Driver = 'ODBC Driver 17 for SQL Server'
 # Database_con = f'mssql://@{Server}/{Database}?driver={Driver}'
 
-server='WIN-NLAMS2TV4QH'
+# server='WIN-NLAMS2TV4QH'
 # server = 'HOME-PC\SQLEXPRESS'
-database='our_organization'
-username='sa'
-password='Qq12345678'
-
-conn_str = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password
-cnxn = pyodbc.connect(conn_str)
-engine = create_engine("mssql+pyodbc:///?odbc_connect={}".format(conn_str))
+# database='our_organization'
+# username='sa'
+# password='Qq12345678'
+#
+# conn_str = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password
+# cnxn = pyodbc.connect(conn_str)
+# engine = create_engine("mssql+pyodbc:///?odbc_connect={}".format(conn_str))
 
 Base = declarative_base()
 
@@ -711,17 +711,30 @@ def init_first():
 
 
 if __name__ == '__main__':
-    style = ttk.Style(root)
-    style.theme_use('alt')
-    style.configure('TButton', background="#D3D3D3",
-                    foreground="black",
-                    fieldbackground="#D3D3D3")
+    try:
+        print("Введите название сервера:")
+        server = input()
+        print("Введите имя пользователя:")
+        username = input()
+        print("Введите пароль:")
+        password = input()
+        database = 'our_organization'
+        conn_str = 'DRIVER={ODBC Driver 17 for SQL Server};SERVER=' + server + ';DATABASE=' + database + ';UID=' + username + ';PWD=' + password
+        cnxn = pyodbc.connect(conn_str)
+        engine = create_engine("mssql+pyodbc:///?odbc_connect={}".format(conn_str))
+        style = ttk.Style(root)
+        style.theme_use('alt')
+        style.configure('TButton', background="#D3D3D3",
+                        foreground="black",
+                        fieldbackground="#D3D3D3")
 
-    buttonFirst = ttk.Button(root, text="Первый пункт", command=init_first)
-    buttonFirst.pack(padx=10, pady=10)
-    buttonSecond = ttk.Button(root, text="Второй пункт", command=init_second)
-    buttonSecond.pack(padx=10, pady=10)
-    buttonThird = ttk.Button(root, text="Третий пункт", command=init_third)
-    buttonThird.pack(padx=10, pady=10)
+        buttonFirst = ttk.Button(root, text="Первый пункт", command=init_first)
+        buttonFirst.pack(padx=10, pady=10)
+        buttonSecond = ttk.Button(root, text="Второй пункт", command=init_second)
+        buttonSecond.pack(padx=10, pady=10)
+        buttonThird = ttk.Button(root, text="Третий пункт", command=init_third)
+        buttonThird.pack(padx=10, pady=10)
 
-    root.mainloop()
+        root.mainloop()
+    except pyodbc.OperationalError:
+        print("Ошибка при подключении к базе данных")
